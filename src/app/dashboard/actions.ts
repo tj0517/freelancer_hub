@@ -195,3 +195,31 @@ export async function downloadFile(formData: FormData) {
 
   redirect(data.signedUrl)
 }
+
+export async function logProjectTime(formData: FormData) {
+  const supabase = await createClient()
+
+  const projectId = formData.get("projectId") as string
+  const hours = parseFloat(formData.get("hours") as string)
+  const description = formData.get("description") as string
+  const stage = formData.get("stage") as string
+
+  if (!projectId || !hours) {
+    throw new Error("Brak wymaganych danych")
+  }
+
+  const { error } = await supabase.from("time_logs").insert({
+    project_id: projectId,
+    hours: hours,
+    description: description,
+    stage: stage,
+    logged_date: new Date().toISOString()
+  })
+
+  if (error) {
+    console.error("Błąd logowania czasu:", error)
+    throw new Error("Nie udało się dodać czasu")
+  }
+
+  revalidatePath(`/dashboard/projects`) // Odśwież widok
+}
