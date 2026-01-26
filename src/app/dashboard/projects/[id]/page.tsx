@@ -1,4 +1,4 @@
-import { createClient } from "@/utils/supabase/server"
+import { getProjectById } from "@/services/projects"
 import { notFound } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -27,30 +27,10 @@ export default async function ProjectDetailsPage({ params }: PageProps) {
 
   const { id } = await params
 
-  const supabase = await createClient()
+  const project = await getProjectById(id)
 
 
-
-  const { data: project, error } = await supabase
-    .from('projects')
-    .select(`
-      *,
-      clients (
-        company_name,
-        email,
-        phone
-      ),
-      tasks (*),
-      project_files(*),
-      time_logs (
-        id, hours, stage, created_at, description
-      )
-    `)
-    .eq('id', id)
-    .single()
-
-
-  if (error || !project) {
+  if (!project) {
     notFound()
   }
 

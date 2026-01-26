@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { MainNav } from "@/components/dashboard/main-nav"
 import { Menu, Package2, Search, User } from "lucide-react"
 import { createClient } from "@/utils/supabase/server"
+import { getUserProfileService } from "@/services/users"
 import { redirect } from "next/navigation"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 
@@ -14,11 +15,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single()
+  const profile = await getUserProfileService(user.id)
 
   if (profile?.role === 'client_user') {
     redirect('/portal')

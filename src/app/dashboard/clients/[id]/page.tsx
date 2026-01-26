@@ -1,22 +1,18 @@
-import { createClient } from "@/utils/supabase/server"
+import { getClientByIdService } from "@/services/clients"
+import { deleteClient } from "@/app/dashboard/actions"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { ArrowLeft, ExternalLink, Mail, Phone, User } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
+import { SubmitButton } from "@/components/submit-button"
 
 
 export default async function ClientDetailsPage({ params }: { params: Promise<{ id: string }> }) {
 
   const { id } = await params
 
-  const supabase = await createClient()
-
-  const { data: client } = await supabase
-    .from('clients')
-    .select('*, projects(*)')
-    .eq('id', id) 
-    .single()
+  const client = await getClientByIdService(id)
 
   if (!client) return <div>Nie znaleziono klienta.</div>
 
@@ -105,6 +101,29 @@ export default async function ClientDetailsPage({ params }: { params: Promise<{ 
             <p className="mt-2 text-sm text-slate-400">
               Liczba projektów: {client.projects.length}
             </p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-red-500 text-white border-2">
+          <CardHeader>
+            <CardTitle className="text-red-500">Usuń Klienta</CardTitle>
+            <CardDescription className="text-slate-400">
+              Usuń klienta z bazy danych
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+         <form
+                action={deleteClient}
+              >
+                <input type="hidden" name="clientId" value={client.id} />
+
+                <SubmitButton
+                  variant="destructive"
+                  loadingText="Usuwanie..."
+                >
+                  Usuń tego klienta trwale
+                </SubmitButton>
+              </form>
           </CardContent>
         </Card>
       </div>

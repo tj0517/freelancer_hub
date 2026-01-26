@@ -1,4 +1,5 @@
-import { createClient } from "@/utils/supabase/server"
+import { getDashboardStats, getRecentProjects } from "@/services/projects"
+import { getRecentClientsService, getActiveClientsService } from "@/services/clients"
 import Link from "next/link"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -10,46 +11,23 @@ import { ArrowUpRight } from "lucide-react"
 import { NewClientDialog } from "@/components/dashboard/createClient"
 
 export default async function DashboardPage() {
-  const supabase = await createClient()
-
-
   const [
-    recentProjectsRes, 
-    revenueRes, 
-    clientsCountRes, 
-    activeProjectsCountRes,
-    recentClientsRes,
-    allClientsListRes
+    stats,
+    projects,
+    recentClients,
+    formClientsList
   ] = await Promise.all([
-    // 1. Ostatnie 5 projektów do tabeli głównej
-    supabase.from('projects').select('*, clients(company_name)').order('created_at', { ascending: false }).limit(5),
-    
-    // 2. Budżet
-    supabase.from('projects').select('budget'),
-    
-    // 3. Liczba wszystkich klientów
-    supabase.from('clients').select('*', { count: 'exact', head: true }),
-
-    // 4. Liczba AKTYWNYCH projektów (w trakcie + planowanie)
-    supabase.from('projects').select('*', { count: 'exact', head: true }).neq('status', 'completed'),
-
-    // 5. Ostatni 5 klientów do bocznej tabeli
-    supabase.from('clients').select('*').order('created_at', { ascending: false }).limit(5),
-
-    // 6. Lista klientów do formularza "Nowy Projekt"
-    supabase.from('clients').select('id, company_name').eq('status', 'active')
+    getDashboardStats(),
+    getRecentProjects(),
+    getRecentClientsService(),
+    getActiveClientsService()
   ])
 
-  const projects = recentProjectsRes.data || []
-  const clientsList = recentClientsRes.data || []
-  const formClientsList = allClientsListRes.data || []
+  const clientsList = recentClients || []
   
-  const clientsCount = clientsCountRes.count || 0
-  const activeProjectsCount = activeProjectsCountRes.count || 0
-
-  const totalRevenue = revenueRes.data?.reduce((sum, current) => {
-    return sum + (current.budget || 0)
-  }, 0) || 0
+  const clientsCount = stats.totalClients
+  const activeProjectsCount = stats.activeProjects
+  const totalRevenue = stats.totalBudget
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('pl-PL', { style: 'currency', currency: 'PLN' }).format(amount)

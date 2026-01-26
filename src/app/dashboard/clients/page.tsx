@@ -1,17 +1,11 @@
-import { createClient } from "@/utils/supabase/server"
+import { getClientsService } from "@/services/clients"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { ArrowRight, Building2, User } from "lucide-react"
 
 export default async function ClientsPage() {
-  const supabase = await createClient()
-
-
-  const { data: clients } = await supabase
-    .from('clients')
-    .select('*, projects(count)') 
-    .order('created_at', { ascending: false })
+  const clients = await getClientsService()
 
   return (
     <div className="flex flex-col gap-6 p-6">

@@ -1,4 +1,4 @@
-import { createClient } from "@/utils/supabase/server"
+import { getAllProjects } from "@/services/projects"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
@@ -7,12 +7,7 @@ import Link from "next/link"
 import { ArrowUpRight } from "lucide-react"
 
 export default async function ProjectsListPage() {
-  const supabase = await createClient()
-
-  const { data: projects } = await supabase
-    .from('projects')
-    .select('*, clients(company_name)')
-    .order('deadline', { ascending: true })
+  const projects = await getAllProjects()
 
   return (
     <div className="flex flex-col gap-6">
