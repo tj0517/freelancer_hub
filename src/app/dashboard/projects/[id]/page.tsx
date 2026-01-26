@@ -17,6 +17,7 @@ import { deleteProject } from "@/app/dashboard/actions"
 import { UploadFileDialog } from "@/components/dashboard/upload-file"
 import { ProjectTimeManager } from "@/components/dashboard/TImesheet"
 import { ProjectHoursList } from "@/components/dashboard/project-hours-list"
+import { SubmitButton } from "@/components/submit-button"
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -80,7 +81,7 @@ export default async function ProjectDetailsPage({ params }: PageProps) {
             Klient: <span className="font-medium text-foreground">{project.clients?.company_name}</span>
           </p>
         </div>
-        <div className="flex items-center gap-2">ń
+        <div className="flex items-center gap-2">
 
           {project.status !== 'completed' && (
             <form action={updateProjectStatus}>
@@ -88,14 +89,14 @@ export default async function ProjectDetailsPage({ params }: PageProps) {
 
               <input type="hidden" id="status" name="status" value="completed" />
 
-              <Button
-                type="submit"
+              <SubmitButton
                 size="sm"
                 className="bg-green-600 hover:bg-green-700 hover:cursor-pointer text-white"
+                loadingText="Zamykanie..."
               >
                 <CheckCircle2 className="mr-2 h-4 w-4" />
                 Zakończ Projekt
-              </Button>
+              </SubmitButton>
             </form>
           )}
         </div>
@@ -232,9 +233,9 @@ export default async function ProjectDetailsPage({ params }: PageProps) {
 
                         <form action={downloadFile}>
                           <input type="hidden" name="filePath" value={file.file_path} />
-                          <Button variant="ghost" size="icon" title="Pobierz plik">
+                          <SubmitButton variant="ghost" size="icon" title="Pobierz plik" loadingText="">
                             <Download className="h-4 w-4 text-slate-500 hover:text-black" />
-                          </Button>
+                          </SubmitButton>
                         </form>
 
                       </div>
@@ -348,7 +349,7 @@ export default async function ProjectDetailsPage({ params }: PageProps) {
                 </div>
 
                 <div className="flex justify-end gap-8">
-                  <Button type="submit">Zapisz wszystkie zmiany</Button>
+                  <SubmitButton loadingText="Zapisywanie...">Zapisz wszystkie zmiany</SubmitButton>
                 </div>
               </form>
 
@@ -367,12 +368,12 @@ export default async function ProjectDetailsPage({ params }: PageProps) {
               >
                 <input type="hidden" name="projectId" value={project.id} />
 
-                <Button
+                <SubmitButton
                   variant="destructive"
-                  type="submit"
+                  loadingText="Usuwanie..."
                 >
                   Usuń ten projekt trwale
-                </Button>
+                </SubmitButton>
               </form>
             </CardContent>
           </Card>

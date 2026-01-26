@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -33,6 +33,7 @@ type Project = {
 
 export function ProjectTimeManager({ project }: { project: Project }) {
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const formRef = useRef<HTMLFormElement>(null)
 
   // 1. Obliczenia na żywo
   const totalHours = project.time_logs?.reduce((acc, log) => acc + log.hours, 0) || 0
@@ -42,12 +43,14 @@ export function ProjectTimeManager({ project }: { project: Project }) {
     : "0"
 
   async function handleAddLog(formData: FormData) {
+    if (isSubmitting) return
+
     setIsSubmitting(true)
     try {
       await logProjectTime(formData)
-      // Opcjonalnie: reset formularza
+      formRef.current?.reset() // Reset formularza po sukcesie
     } catch (e) {
-      alert("Błąd")
+      alert("Błąd podczas dodawania czasu")
     } finally {
       setIsSubmitting(false)
     }
@@ -111,14 +114,18 @@ export function ProjectTimeManager({ project }: { project: Project }) {
           <CardTitle className="text-base">Zaksięguj czas pracy</CardTitle>
         </CardHeader>
         <CardContent>
-          <form action={handleAddLog} className="grid gap-4 items-end grid-cols-1 md:grid-cols-4">
+          <form 
+            ref={formRef}
+            action={handleAddLog} 
+            className="grid gap-4 items-end grid-cols-1 md:grid-cols-4"
+          >
 
             {/* Ukryte ID projektu */}
             <input type="hidden" name="projectId" value={project.id} />
 
             <div className="grid gap-2">
               <Label>Etap</Label>
-              <Select name="stage" defaultValue="development">
+              <Select name="stage" defaultValue="development" disabled={isSubmitting}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -133,16 +140,21 @@ export function ProjectTimeManager({ project }: { project: Project }) {
 
             <div className="grid gap-2">
               <Label>Opis (opcjonalne)</Label>
-              <Input name="description" placeholder="np. Poprawki w headerze" />
+              <Input name="description" placeholder="np. Poprawki w headerze" disabled={isSubmitting} />
             </div>
 
             <div className="grid gap-2">
               <Label>Godziny</Label>
-              <Input type="number" step="0.5" name="hours" placeholder="0.0" required />
+              <Input type="number" step="0.5" name="hours" placeholder="0.0" required disabled={isSubmitting} />
             </div>
 
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? <Loader2 className="animate-spin" /> : "Dodaj"}
+              {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Dodawanie...
+                  </>
+              ) : "Dodaj"}
             </Button>
           </form>
         </CardContent>

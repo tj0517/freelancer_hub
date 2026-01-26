@@ -4,6 +4,7 @@ import { useState } from "react"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { SubmitButton } from "@/components/submit-button"
 import { Plus, Trash2, Calendar as CalendarIcon } from "lucide-react"
 import { createTask, toggleTask, deleteTask } from "@/app/dashboard/actions"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
@@ -30,7 +31,14 @@ export function TaskList({ tasks, projectId, deadline_date }: { tasks: Task[], p
     <div className="space-y-6">
       
       {/* 1. FORMULARZ DODAWANIA ZADANIA */}
-      <form action={createTask} className="flex gap-2 items-start">
+      <form 
+        action={async (formData) => {
+          // Resetujemy formularz po wysłaniu
+          await createTask(formData);
+          // Opcjonalnie: wyczyść input (wymagałoby controled input)
+        }} 
+        className="flex gap-2 items-start"
+      >
         <input type="hidden" name="projectId" value={projectId} />
         {date && <input type="hidden" name="deadline" value={date.toISOString()} />}
         
@@ -69,9 +77,12 @@ export function TaskList({ tasks, projectId, deadline_date }: { tasks: Task[], p
           </PopoverContent>
         </Popover>
 
-        <Button type="submit" size="icon">
+        <SubmitButton 
+            size="icon" 
+            loadingText="" // Pusty tekst, tylko spinner
+        >
           <Plus className="h-4 w-4" />
-        </Button>
+        </SubmitButton>
       </form>
 
       {/* 2. LISTA ZADAŃ */}
